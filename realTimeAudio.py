@@ -4,7 +4,7 @@ import numpy
 from PyQt4 import QtCore, QtGui
 import PyQt4.Qwt5 as Qwt
 from recorder import *
-
+import peak_detect as peak
 
 
 def plotSomething():
@@ -13,6 +13,14 @@ def plotSomething():
     xs,ys=SR.fft()
     c.setData(xs,ys)
     uiplot.qwtPlot.replot()
+    ### START peak detection ###
+    _max, _min = peak.peakdetect(ys, xs, 50, 0.30)
+    THRESHOLD = 500
+    thresholdIsReached = ys > THRESHOLD
+    thresholdIsReached[1:][thresholdIsReached[:-1] & thresholdIsReached[1:]] = False
+    if thresholdIsReached.any():
+    	print "Peaks detected : ",_max
+    ### END peak detection ###
     SR.newAudio=False
 
 if __name__ == "__main__":
@@ -22,10 +30,10 @@ if __name__ == "__main__":
     uiplot = ui_plot.Ui_win_plot()
     uiplot.setupUi(win_plot)
     uiplot.btnA.clicked.connect(plotSomething)
-    #uiplot.btnB.clicked.connect(lambda: uiplot.timer.setInterval(100.0))
-    #uiplot.btnC.clicked.connect(lambda: uiplot.timer.setInterval(10.0))
-    #uiplot.btnD.clicked.connect(lambda: uiplot.timer.setInterval(1.0))
-    c=Qwt.QwtPlotCurve()  
+    uiplot.btnB.clicked.connect(lambda: uiplot.timer.setInterval(100.0))
+    uiplot.btnC.clicked.connect(lambda: uiplot.timer.setInterval(10.0))
+    uiplot.btnD.clicked.connect(lambda: uiplot.timer.setInterval(1.0))
+    c=Qwt.QwtPlotCurve()
     c.attach(uiplot.qwtPlot)
     
     uiplot.qwtPlot.setAxisScale(uiplot.qwtPlot.yLeft, 0, 1000)
