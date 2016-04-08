@@ -55,7 +55,7 @@ class SwhRecorder:
             if self.threadsDieNow: break
             for i in range(self.chunksToRecord):
                 self.audio[i*self.BUFFERSIZE:(i+1)*self.BUFFERSIZE]=self.getAudio()
-            self.newAudio=True 
+            self.newAudio=True
             if forever==False: break
     
     def continuousStart(self):
@@ -99,4 +99,4 @@ class SwhRecorder:
         """open a matplotlib popup window showing audio data."""
         pylab.plot(self.audio.flatten())
         pylab.show()        
-            
+    

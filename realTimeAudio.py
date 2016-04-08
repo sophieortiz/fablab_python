@@ -1,6 +1,7 @@
 import ui_plot
 import sys
 import numpy
+from scipy import stats
 from PyQt4 import QtCore, QtGui
 import PyQt4.Qwt5 as Qwt
 from recorder import *
@@ -14,12 +15,13 @@ def plotSomething():
     c.setData(xs,ys)
     uiplot.qwtPlot.replot()
     ### START peak detection ###
-    _max, _min = peak.peakdetect(ys, xs, 50, 0.30)
+    _max, _min = peak.peakdetect(ys, xs, 30, 0.30)
+    slope, intercept, r_value, p_value, std_err = stats.linregress(xs,ys)
     THRESHOLD = 500
     thresholdIsReached = ys > THRESHOLD
     thresholdIsReached[1:][thresholdIsReached[:-1] & thresholdIsReached[1:]] = False
     if thresholdIsReached.any():
-    	print "Peaks detected : ",_max
+    	print "Lin Reg: ", slope, "Peaks detected: ",_max
     ### END peak detection ###
     SR.newAudio=False
 
