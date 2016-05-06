@@ -6,6 +6,8 @@ from PyQt4 import QtCore, QtGui
 import PyQt4.Qwt5 as Qwt
 from recorder import *
 import peak_detect as peak
+import os
+from math import *
 
 
 def plotSomething():
@@ -17,17 +19,23 @@ def plotSomething():
     ### START peak detection ###
     _max, _min = peak.peakdetect(ys, xs, 30, 0.30)
     slope, intercept, r_value, p_value, std_err = stats.linregress(xs,ys)
-    THRESHOLD = 500
+    THRESHOLD = 10000
     thresholdIsReached = ys > THRESHOLD
     thresholdIsReached[1:][thresholdIsReached[:-1] & thresholdIsReached[1:]] = False
+    iterateur = 1
     if thresholdIsReached.any():
-    	print "Lin Reg: ", slope, "Peaks detected: ",_max
+		print "Lin Reg: ", slope, "Peaks detected: ",_max
+		print "iterateur: ", iterateur
+		if iterateur%2==0:
+		    os.system('curl --header "Content-Type: text/plain" --request PUT --data "ON" http://localhost:8080/rest/items/Light_Gest/state')
+		else:
+		    print "off"
+		    os.system('curl --header "Content-Type: text/plain" --request PUT --data "OFF" http://localhost:8080/rest/items/Light_Gest/state') 
     ### END peak detection ###
     SR.newAudio=False
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
-    
     win_plot = ui_plot.QtGui.QMainWindow()
     uiplot = ui_plot.Ui_win_plot()
     uiplot.setupUi(win_plot)
