@@ -9,7 +9,7 @@ class ArduinoReader:
     #hypothese robin envoie les données lignes par lignes a la vitesse 9600 baud/s
 
     def __init__(self):
-        self.serial_port = Serial(port='/dev/ttyUSB0', baudrate=9600)
+        self.serial_port = Serial(port='/dev/ttyUSB0', baudrate=230400)
 
 
 

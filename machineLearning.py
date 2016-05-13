@@ -18,25 +18,26 @@ class MachineLearning:
 
         ###download the samples and give them to the algorithm
         ls = shelve.open('learned_samples.db', writeback=True)
+
+        samplesList = []
         if self.microInput:
 
             resultsArray = np.arange(0, self.microSampleIndex)
-            samplesList= []
 
             for i in range(0, self.microSampleIndex):
-
                 samplesList.append(ls["micro" + str(i)][0])
-
                 resultsArray[i] = ls["micro" + str(i)][1]
 
-
-
-            samplesArray = np.array(samplesList)
-
-            self.clf.fit(samplesArray, resultsArray)
         else:
+            resultsArray = np.arange(0, self.arduinoSampleIndex)
+
             for i in range(0, self.arduinoSampleIndex):
-                self.clf.fit(ls["arduino" + str(i)])
+                samplesList.append(ls["arduino" + str(i)][0])
+                resultsArray[i] = ls["arduino" + str(i)][1]
+
+        samplesArray = np.array(samplesList)
+
+        self.clf.fit(samplesArray, resultsArray)
         ls.close()
 
     def __init__(self, microInput):
