@@ -9,11 +9,33 @@ import peak_detect as peak
 import os
 from math import *
 from machineLearning import *
+from arduinoReader import *
 
 def plotSomething():
-    if SR.newAudio==False: 
+
+    global microInput
+    global curWait
+    global learn
+    global result
+    global ml
+    global code
+
+    if microInput:
+        newInput = SR.newAudio
+    else:
+        newInput = AR.newArduino
+
+    if newInput==False:
         return
-    xs,ys=SR.fft()
+
+    if microInput:
+        xs,ys=SR.fft()
+    else:
+        global xAr
+        xs= xAr
+        ys = AR.getArduino()
+
+
     c.setData(xs,ys)
     uiplot.qwtPlot.replot()
     ### START peak detection ###
@@ -35,18 +57,18 @@ def plotSomething():
     ### END peak detection ###
 
 	### START signal analysis ###
-	
-    global curWait
-    curMean = np.mean(_max)
-    global learn
-    global microInput
-    global result
-    global ml
-    global code
+
+    curMean = np.mean(ys)
+    s = str(curMean)
+    global ct
+
 
     if curMean > HITLIMIT:
 
         if learn:
+
+            print('coup' + str(ct))
+            ct += 1
             ml.learn(ys, result)
 
             #voir si on peut pas faire une fermeture du realtimeaudio un peu plus propre
@@ -61,7 +83,10 @@ def plotSomething():
             
 	### END signal analysis ###
 
-    SR.newAudio=False
+    if microInput:
+        SR.newAudio=False
+    else:
+        AR.newArduino = False
 
 
     
@@ -70,6 +95,9 @@ if __name__ == "__main__":
     microInput = True
     procede = False
     learn = False
+
+    global ct
+    ct = 0
 
     ###Arguments analysis
     
@@ -99,8 +127,10 @@ if __name__ == "__main__":
         HITLIMIT = 2000
         WAITLIMIT = 5
     else:
-        HITLIMIT = 5000
-        WAITLIMIT = 5    
+        HITLIMIT = 500
+        WAITLIMIT = 5
+        global xAr
+        xAr = np.arange(0,64)
 
     curWait = 0
 
@@ -109,6 +139,8 @@ if __name__ == "__main__":
         ml=MachineLearning(microInput)
         if not learn:
             ml.guessingInit()
+
+
         app = QtGui.QApplication(sys.argv)
         win_plot = ui_plot.QtGui.QMainWindow()
         uiplot = ui_plot.Ui_win_plot()
@@ -119,8 +151,13 @@ if __name__ == "__main__":
         uiplot.btnD.clicked.connect(lambda: uiplot.timer.setInterval(1.0))
         c=Qwt.QwtPlotCurve()
         c.attach(uiplot.qwtPlot)
-    
-        uiplot.qwtPlot.setAxisScale(uiplot.qwtPlot.yLeft, 0, 1000)
+
+        if microInput:
+            ordo = 1000
+        else:
+            ordo = 1000
+
+        uiplot.qwtPlot.setAxisScale(uiplot.qwtPlot.yLeft, 0, ordo)
     
         uiplot.timer = QtCore.QTimer()
         uiplot.timer.start(1.0)
@@ -128,14 +165,19 @@ if __name__ == "__main__":
     
         win_plot.connect(uiplot.timer, QtCore.SIGNAL('timeout()'), plotSomething) 
     
-        SR=SwhRecorder()
-        SR.setup()
-        SR.continuousStart()
+        if microInput:
+            SR=SwhRecorder()
+            SR.setup()
+            SR.continuousStart()
+        else:
+            AR = ArduinoReader()
+            AR.continuousStart()
 
         ### DISPLAY WINDOWS
         win_plot.show()
         code=app.exec_()
-        SR.close()
+        if microInput:
+            SR.close()
         sys.exit(code)
     else:
         print('Erreur dans les arguments: precisez l\'entree (\"micro\" ou \"arduino\") suivi de learn et de la valeur retour pour apprendre un echantillon.')
