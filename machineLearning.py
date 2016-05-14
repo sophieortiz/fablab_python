@@ -7,17 +7,23 @@ import numpy as np
 class MachineLearning:
 
 
+    def format(self, datas):
+        res = np.arange(0, len(datas)*datas[0].shape[0])
+        for i in range(0, len(datas)):
+            for j in range(0, datas[0].shape[0]):
+                res[i*datas[0].shape[0] + j] = datas[i][j]
+        return res
 
     def guessing(self, data):
-        return self.clf.predict(data.reshape(1, -1))
+        return self.clf.predict(self.format(data).reshape(1, -1))
 
     def guessingInit(self):
 
         ###init the algorithm
-        self.clf = svm.SVC(kernel='rbf')
+        self.clf = svm.SVC(kernel='poly')
 
         ###download the samples and give them to the algorithm
-        ls = shelve.open('learned_samples.db', writeback=True)
+        ls = shelve.open(self.biblio, writeback=True)
 
         samplesList = []
         if self.microInput:
@@ -42,9 +48,11 @@ class MachineLearning:
 
     def __init__(self, microInput):
 
+        self.biblio = 'learned_samples5.db'
+
 
         self.microInput = microInput
-        ls = shelve.open('learned_samples.db', writeback=True)
+        ls = shelve.open(self.biblio, writeback=True)
         if not ls.has_key('META'):
             ls['META'] = [0, 0]
             self.microSampleIndex = 0
@@ -56,6 +64,8 @@ class MachineLearning:
 
         ls.close()
 
+        print('DEBUG: nb samples arduino: ' + str(self.arduinoSampleIndex))
+
             
 
     def learn(self, data, result):
@@ -64,14 +74,14 @@ class MachineLearning:
         resultArray[0] = result
 
 
-        ls = shelve.open('learned_samples.db', writeback=True)
+        ls = shelve.open(self.biblio, writeback=True)
         if self.microInput:
 
-            ls["micro"+str(self.microSampleIndex)] = [data, resultArray]
+            ls["micro"+str(self.microSampleIndex)] = [self.format(data), resultArray]
             ls['META'][0] = self.microSampleIndex + 1
 
         else:
-            ls["arduino"+str(self.arduinoSampleIndex)] = [data, resultArray]
+            ls["arduino"+str(self.arduinoSampleIndex)] = [self.format(data), resultArray]
             ls['META'][1] = self.arduinoSampleIndex + 1
         ls.close()
 

@@ -61,25 +61,36 @@ def plotSomething():
     curMean = np.mean(ys)
     s = str(curMean)
     global ct
+    global datas
 
 
-    if curMean > HITLIMIT:
 
-        if learn:
 
-            print('coup' + str(ct))
-            ct += 1
-            ml.learn(ys, result)
+    if (curMean > HITLIMIT or curWait > 0) and ct > BEGINCOUNT:
 
-            #voir si on peut pas faire une fermeture du realtimeaudio un peu plus propre
-            sys.exit(0)
+        if curWait < WAITLIMIT:
+            datas.append(ys)
+            print('on a rentre 1 data. curwait: ' + str(curWait))
+            curWait += 1
         else:
-            if curWait < WAITLIMIT:
-                openHabAction = ml.guessing(ys)
-                print('OPEN HAB ACTION: '+str(openHabAction))               
-                curWait = 0   
+            if learn:
+
+                print('len data: '+str(len(datas)))
+
+                ml.learn(datas, result)
+
+                #voir si on peut pas faire une fermeture du realtimeaudio un peu plus propre
+                sys.exit(0)
             else:
-                curWait = curWait + 1
+                openHabAction = ml.guessing(datas)
+                ct = 0
+                print('OPEN HAB ACTION: '+str(openHabAction))
+            curWait = 0
+            datas = []
+    else:
+        ct += 1
+
+
             
 	### END signal analysis ###
 
@@ -98,6 +109,8 @@ if __name__ == "__main__":
 
     global ct
     ct = 0
+    global datas
+    datas = []
 
     ###Arguments analysis
     
@@ -125,10 +138,12 @@ if __name__ == "__main__":
     ###Parameters for analysis
     if microInput:
         HITLIMIT = 2000
-        WAITLIMIT = 5
+        WAITLIMIT = 4
+        BEGINCOUNT = 5
     else:
-        HITLIMIT = 500
-        WAITLIMIT = 5
+        HITLIMIT = 400
+        WAITLIMIT = 7
+        BEGINCOUNT = 10
         global xAr
         xAr = np.arange(0,64)
 
