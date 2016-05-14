@@ -1,0 +1,75 @@
+#Lancement de l'algo:
+python realTimeAudio.py <mode d'input> (learn <entier résultat>)
+
+avec mode d'input = micro ou arduino
+et la partie entre parenthèse à mettre que si on veut apprendre de nouveaux échantillons.
+
+J'ai modifié l'algo pour qu'on ne soit pas obligé de le relancer entre chaque échantillon qu'on veut apprendre,
+on lance l'algo et chaque fois qu'on fait un coup (détecté par un moyenne d'amplitude supérieur à HITLIMIT),
+il enregistre un certains nombre d'aquisitions à la suite (pour avoir l'évolution dans le temps des différents signaux)
+qui formeront un échantillon appris à l'algo.
+Ce nombre est WAITLIMIT (le nom est pas terriblement choisit c'est vrai).
+
+Il faut pas se planter quand on apprend un nouvel échantillon parcequ'il s'écrit dans la biblio même s'il est pourri ^^
+On pourrait aller l'enlever manuellement après mais faudrait écrire des fonctions en plus :)
+
+J'ai constaté que ça marchait mieux si on avait environ le même nombre d'échantillons pour chaque coup,
+et si les échantillons sont précis, 4 suffisent par coup (j'ai essayé en faisant des petits coup smooth mais ça
+réussisait pas à les différencier, je pourrais essayer d'obtenir de meilleurs résultats et regardant ça la semaine pro
+mais pour l'instant on a besoin d'être un peu précis quand on tape)
+
+
+
+
+#Résumé du fonctionnement du truc:
+
+dans machineLearning.py, la fonction __init__, on peut préciser la bibliothèque avec laquelle on veut travailler
+avant de lancer l'algo (self.biblio). C'est dans cette bibliothèque là qu'on insère de nouveaux échantillons en mode learn,
+et c'est les échantillon de celle-ci qu'il apprend à l'algo de ML en mode non learn.
+
+Comme pour l'algo il faut toujours que tous les échantillons aient exactement la même taille, le paramètre WAITLIMIT
+doit être le même lors de l'apprentissage de chaque échantillon et lors de la détection (pour une même biblio)
+
+Les échantillons sont spécifiques à l'arduino ou au micro, donc si vous voulez utiliser la biblio
+learned_sample_glisse_tap, il faut que vous passiez chez moi récupérer le montage arduino (me semble-il que flo est
+là ce week end).
+Mais du coup vous pouez essayer de reproduire ces résultats avec le mogees, par contre là j'ai pas testé du coup
+j'ai aucune idée de comment il faut ajuster les paramètres (WAITLIMIT, nombre d'échantillons appris ...)
+
+Pour l'arduino, j'ai fixé WAITLIMIT à 7 car au dela on arrive plus rien à reconnaître (l'allure générale des 2 coups
+différents doit être trop similaire), du coup c'est trop rapproché pour qu'on puisse enchaîner 2 coups, du coup la
+reconnaissance de 2 coups successifs ça se fera à la main en donnant chaque coup séparemment à l'algo de ML
+(on ne pourra pas tout lui donner d'un coup et le laisser reconnaitre tout seul qu'il y en a deux).
+Je ferais ça plus tard parceque là vu l'heure je dois bientôt me casser!!
+Mais ça c'est pas compliqué à implémenter ça demande juste du temps de réflexion pour voir comment faire.
+
+Du coup pour vous, pour décider quels actions openhab réaliser, on a deux coups dont on peut faire des combinaisons
+différentes (ex: deux taps à la suite, deux glissés, un tap puis un glissé , l'inverse, on peut même penser à des
+combis à trois coups).
+
+En tout cas, pour qu'on se synchronise, la détection d'un coup tout seul ou de n'importe qu'elle combinaison de coups
+finira toujours par être écrite dans la variable openHabAction.
+
+Quelque chose que le prof a suggéré aussi c'est la mémoire d'action précédente:
+par exemple si je fais telle action ça allume la lumière et si je la refais ensuite ça l'éteinds
+
+
+
+
+
+
+#Dans la bibliothèque learned_samples_glisse_tape:
+
+4 échantillon de chaque coup, j'ai utilisé mon stylo encre métallique pour taper sur la table
+
+pour la tap, il doit être fort et net
+pour le glissé, il doit être assès fort aussi et avoir un intensité d'appui relativement constante
+(de toute façon, vous pouvez lancer l'algo et regarder ce qui marche ou ce qui marche pas, mais encore
+faut-il que vous ayez l'arduino, par contre vous pouvez tentez de reproduire la même chose avec le mogees,
+qui normalement est plus précis que l'arduino du coup obtenir des résultats au moins aussi bien ça me
+semble logique)
+
+#
+Voilà voilà j'espère que je vous ait donné toutes les infos pour que vous puissiez travailler ce week end,
+peut-être j'ai un peu trop parlé aussi mais comme ça ça m'avance dans mon wiki ^^
+Evidemment appelez moi si vous avez des questions.

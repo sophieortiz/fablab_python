@@ -19,6 +19,7 @@ def plotSomething():
     global result
     global ml
     global code
+    global absCpt
 
     if microInput:
         newInput = SR.newAudio
@@ -70,7 +71,7 @@ def plotSomething():
 
         if curWait < WAITLIMIT:
             datas.append(ys)
-            print('on a rentre 1 data. curwait: ' + str(curWait))
+            print('on a rentre 1 data. curwait: ' + str(curWait) +' ct: ' + str(absCpt)+  ' curMean ' + str(curMean))
             curWait += 1
         else:
             if learn:
@@ -80,7 +81,7 @@ def plotSomething():
                 ml.learn(datas, result)
 
                 #voir si on peut pas faire une fermeture du realtimeaudio un peu plus propre
-                sys.exit(0)
+                #sys.exit(0)
             else:
                 openHabAction = ml.guessing(datas)
                 ct = 0
@@ -90,7 +91,7 @@ def plotSomething():
     else:
         ct += 1
 
-
+    absCpt +=1
             
 	### END signal analysis ###
 
@@ -106,6 +107,9 @@ if __name__ == "__main__":
     microInput = True
     procede = False
     learn = False
+
+    global absCpt
+    absCpt = 0
 
     global ct
     ct = 0
@@ -138,11 +142,12 @@ if __name__ == "__main__":
     ###Parameters for analysis
     if microInput:
         HITLIMIT = 2000
-        WAITLIMIT = 4
-        BEGINCOUNT = 5
+        WAITLIMIT = 7
+        BEGINCOUNT = 10
     else:
         HITLIMIT = 400
-        WAITLIMIT = 7
+        WAITLIMIT = 15
+
         BEGINCOUNT = 10
         global xAr
         xAr = np.arange(0,64)
