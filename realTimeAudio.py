@@ -20,6 +20,7 @@ def plotSomething():
     global ml
     global code
     global absCpt
+    global newOpenHabAction
 
     if microInput:
         newInput = SR.newAudio
@@ -86,6 +87,7 @@ def plotSomething():
                 openHabAction = ml.guessing(datas)
                 ct = 0
                 print('OPEN HAB ACTION: '+str(openHabAction))
+                newOpenHabAction = True
             curWait = 0
             datas = []
     else:
@@ -94,6 +96,21 @@ def plotSomething():
     absCpt +=1
             
 	### END signal analysis ###
+
+    ###Partie Liaison avec OpenHab, c'est pour toi Leslie
+
+    if newOpenHabAction:
+        ###Fais ton truc, ici c'est la variable openHabAction qui vaut un npArray de taille 1 avec l'entier
+        ###resutat dedans
+
+
+
+
+
+        newOpenHabAction = False
+
+
+    ####Fin de cette partie
 
     if microInput:
         SR.newAudio=False
@@ -107,6 +124,8 @@ if __name__ == "__main__":
     microInput = True
     procede = False
     learn = False
+    global newOpenHabAction
+    newOpenHabAction = False
 
     global absCpt
     absCpt = 0
