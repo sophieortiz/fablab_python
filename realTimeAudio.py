@@ -18,9 +18,13 @@ def plotSomething():
     global learn
     global result
     global ml
-    global code
     global absCpt
     global newOpenHabAction
+    global ct
+    global datas
+    global tempOpenHabAction
+    global tmpAction
+    global inWaintingOHA
 
     if microInput:
         newInput = SR.newAudio
@@ -61,37 +65,72 @@ def plotSomething():
 	### START signal analysis ###
 
     curMean = np.mean(ys)
-    s = str(curMean)
-    global ct
-    global datas
 
-
-
+    if inWaintingOHA and ct > 30:
+        newOpenHabAction = True
+        inWaintingOHA = False
+        openHabAction = np.arange(1)
+        openHabAction[0] = tmpAction
+        ct = 0
 
     if (curMean > HITLIMIT or curWait > 0) and ct > BEGINCOUNT:
 
+        if ct < 20:
+            tempOpenHabAction = True
+
+
+
+
+
         if curWait < WAITLIMIT:
+
+
             datas.append(ys)
-            print('on a rentre 1 data. curwait: ' + str(curWait) +' ct: ' + str(absCpt)+  ' curMean ' + str(curMean))
+            #print('on a rentre 1 data')
             curWait += 1
         else:
             if learn:
 
-                print('len data: '+str(len(datas)))
+                print('coup '+str(absCpt))
 
                 ml.learn(datas, result)
 
                 #voir si on peut pas faire une fermeture du realtimeaudio un peu plus propre
                 #sys.exit(0)
             else:
+
                 openHabAction = ml.guessing(datas)
-                ct = 0
-                print('OPEN HAB ACTION: '+str(openHabAction))
-                newOpenHabAction = True
+
+                if tempOpenHabAction:
+                    tempOpenHabAction = False
+                    inWaintingOHA = False
+
+                    if tmpAction == 1:
+                        if openHabAction[0] == 1:
+                            openHabAction[0] = 3
+                    elif openHabAction[0] == 2:
+                        openHabAction[0] = 4
+                    newOpenHabAction = True
+
+
+
+                else:
+                    inWaintingOHA = True
+                    tmpAction = openHabAction[0]
+
+
+
+
+
+
+
             curWait = 0
+            ct = 0
             datas = []
+
     else:
         ct += 1
+
 
     absCpt +=1
             
@@ -104,7 +143,7 @@ def plotSomething():
         ###resutat dedans
 
 
-
+        print('OPEN HAB ACTION: ' + str(openHabAction))
 
 
         newOpenHabAction = False
@@ -126,6 +165,10 @@ if __name__ == "__main__":
     learn = False
     global newOpenHabAction
     newOpenHabAction = False
+    global tempOpenHabAction
+    tempOpenHabAction = False
+    global inWaintingOHA
+    inWaintingOHA = False
 
     global absCpt
     absCpt = 0
@@ -134,6 +177,7 @@ if __name__ == "__main__":
     ct = 0
     global datas
     datas = []
+
 
     ###Arguments analysis
     
@@ -164,10 +208,10 @@ if __name__ == "__main__":
         WAITLIMIT = 7
         BEGINCOUNT = 10
     else:
-        HITLIMIT = 400
-        WAITLIMIT = 15
+        HITLIMIT = 450
+        WAITLIMIT = 7
 
-        BEGINCOUNT = 10
+        BEGINCOUNT = 5
         global xAr
         xAr = np.arange(0,64)
 

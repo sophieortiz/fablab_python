@@ -48,7 +48,7 @@ class MachineLearning:
 
     def __init__(self, microInput):
 
-        self.biblio = 'learned_samples6.db'
+        self.biblio = 'learned_samples_glisse_tape.db'
 
 
         self.microInput = microInput
