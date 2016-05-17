@@ -21,6 +21,9 @@ def plotSomething():
     global code
     global absCpt
     global newOpenHabAction
+    global it_light
+    global it_rollershutter
+
 
     if microInput:
         newInput = SR.newAudio
@@ -49,13 +52,13 @@ def plotSomething():
     thresholdIsReached[1:][thresholdIsReached[:-1] & thresholdIsReached[1:]] = False
     iterateur = 1
     if thresholdIsReached.any():
-		#print "Lin Reg: ", slope, "Peaks detected: ",_max
+		print "Lin Reg: ", slope, "Peaks detected: ",_max
 		#print "iterateur: ", iterateur
-		if iterateur%2==0:
-		    os.system('curl --header "Content-Type: text/plain" --request PUT --data "ON" http://localhost:8080/rest/items/Light_Gest/state')
-		else:
-		    print "off"
-		    os.system('curl --header "Content-Type: text/plain" --request PUT --data "OFF" http://localhost:8080/rest/items/Light_Gest/state') 
+		#if iterateur%2==0:
+		#    os.system('curl --header "Content-Type: text/plain" --request PUT --data "ON" http://localhost:8080/rest/items/Light_Gest/state')
+		#else:
+		 #   print "off"
+		  #  os.system('curl --header "Content-Type: text/plain" --request PUT --data "OFF" http://localhost:8080/rest/items/Light_Gest/state') 
     ### END peak detection ###
 
 	### START signal analysis ###
@@ -102,12 +105,39 @@ def plotSomething():
     if newOpenHabAction:
         ###Fais ton truc, ici c'est la variable openHabAction qui vaut un npArray de taille 1 avec l'entier
         ###resutat dedans
+   
+		### 1 Light_Gest
+        ### 2 shutter_GF_living
+		### 3 temperature up si 1 et down sinon -> traitement openhab
+		
+		# ou est tabactions ? 
+		if openHabAction[0]==1 : 
+			#pour l'instant juste pour allumer
+			it_light = it_light + 1
+			if (it_light%2 == 0) :
+				os.system('curl --header "Content-Type: text/plain" --request PUT --data "ON" http://localhost:8080/rest/items/Light_Gest/state')
+			else : 
+				os.system('curl --header "Content-Type: text/plain" --request PUT --data "OFF" http://localhost:8080/rest/items/Light_Gest/state')
+		elif openHabAction[0]== 3 : 
+			it_rollershutter = it_rollershutter + 1
+			if (it_rollershutter%2 == 0) :
+				os.system('curl --header "Content-Type: text/plain" --request PUT --data "ON" http://localhost:8080/rest/items/RollerShutter_Gest/state')
+			else : 
+				os.system('curl --header "Content-Type: text/plain" --request PUT --data "OFF" http://localhost:8080/rest/items/RollerShutter_Gest/state')    
+		elif openHabAction[0]==2 :
+			if (it_up%2 == 0) :
+				os.system('curl --header "Content-Type: text/plain" --request PUT --data "ON" http://localhost:8080/rest/items/Temp_Gest_Up/state')
+			else : 
+				os.system('curl --header "Content-Type: text/plain" --request PUT --data "OFF" http://localhost:8080/rest/items/Temp_Gest_Up/state')			
+		elif openHabAction[0]==4 : 
+			if (it_down%2 == 0) :
+				os.system('curl --header "Content-Type: text/plain" --request PUT --data "ON" http://localhost:8080/rest/items/Temp_Gest_Down/state')
+			else : 
+				os.system('curl --header "Content-Type: text/plain" --request PUT --data "OFF" http://localhost:8080/rest/items/Temp_Gest_Down/state')
+		else : 				
+			print("Etrange")
 
-
-
-
-
-        newOpenHabAction = False
+		newOpenHabAction = False
 
 
     ####Fin de cette partie
@@ -126,6 +156,12 @@ if __name__ == "__main__":
     learn = False
     global newOpenHabAction
     newOpenHabAction = False
+
+    global it_rollershutter 
+    it_rollershutter = 1
+    global it_light 
+    it_light = 1
+
 
     global absCpt
     absCpt = 0
