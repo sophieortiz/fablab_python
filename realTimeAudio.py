@@ -18,13 +18,18 @@ def plotSomething():
     global learn
     global result
     global ml
-    global code
     global absCpt
     global newOpenHabAction
     global it_light
     global it_rollershutter
-
-
+    global it_up
+    global it_down
+    global ct
+    global datas
+    global tempOpenHabAction
+    global tmpAction
+    global inWaintingOHA
+    
     if microInput:
         newInput = SR.newAudio
     else:
@@ -64,37 +69,72 @@ def plotSomething():
 	### START signal analysis ###
 
     curMean = np.mean(ys)
-    s = str(curMean)
-    global ct
-    global datas
 
-
-
+    if inWaintingOHA and ct > 30:
+        newOpenHabAction = True
+        inWaintingOHA = False
+        openHabAction = np.arange(1)
+        openHabAction[0] = tmpAction
+        ct = 0
 
     if (curMean > HITLIMIT or curWait > 0) and ct > BEGINCOUNT:
 
+        if ct < 20:
+            tempOpenHabAction = True
+
+
+
+
+
         if curWait < WAITLIMIT:
+
+
             datas.append(ys)
-            print('on a rentre 1 data. curwait: ' + str(curWait) +' ct: ' + str(absCpt)+  ' curMean ' + str(curMean))
+            #print('on a rentre 1 data')
             curWait += 1
         else:
             if learn:
 
-                print('len data: '+str(len(datas)))
+                print('coup '+str(absCpt))
 
                 ml.learn(datas, result)
 
                 #voir si on peut pas faire une fermeture du realtimeaudio un peu plus propre
                 #sys.exit(0)
             else:
+
                 openHabAction = ml.guessing(datas)
-                ct = 0
-                print('OPEN HAB ACTION: '+str(openHabAction))
-                newOpenHabAction = True
+
+                if tempOpenHabAction:
+                    tempOpenHabAction = False
+                    inWaintingOHA = False
+
+                    if tmpAction == 1:
+                        if openHabAction[0] == 1:
+                            openHabAction[0] = 3
+                    elif openHabAction[0] == 2:
+                        openHabAction[0] = 4
+                    newOpenHabAction = True
+
+
+
+                else:
+                    inWaintingOHA = True
+                    tmpAction = openHabAction[0]
+
+
+
+
+
+
+
             curWait = 0
+            ct = 0
             datas = []
+
     else:
         ct += 1
+
 
     absCpt +=1
             
@@ -103,14 +143,6 @@ def plotSomething():
     ###Partie Liaison avec OpenHab, c'est pour toi Leslie
 
     if newOpenHabAction:
-        ###Fais ton truc, ici c'est la variable openHabAction qui vaut un npArray de taille 1 avec l'entier
-        ###resutat dedans
-   
-		### 1 Light_Gest
-        ### 2 shutter_GF_living
-		### 3 temperature up si 1 et down sinon -> traitement openhab
-		
-		# ou est tabactions ? 
 		if openHabAction[0]==1 : 
 			#pour l'instant juste pour allumer
 			it_light = it_light + 1
@@ -137,7 +169,8 @@ def plotSomething():
 		else : 				
 			print("Etrange")
 
-		newOpenHabAction = False
+        print('OPEN HAB ACTION: ' + str(openHabAction))
+        newOpenHabAction = False
 
 
     ####Fin de cette partie
@@ -156,11 +189,19 @@ if __name__ == "__main__":
     learn = False
     global newOpenHabAction
     newOpenHabAction = False
+    global tempOpenHabAction
+    tempOpenHabAction = False
+    global inWaintingOHA
+    inWaintingOHA = False
 
     global it_rollershutter 
     it_rollershutter = 1
     global it_light 
     it_light = 1
+    global it_up
+    it_up = 1
+    global it_down
+    it_down = 1
 
 
     global absCpt
@@ -170,6 +211,7 @@ if __name__ == "__main__":
     ct = 0
     global datas
     datas = []
+
 
     ###Arguments analysis
     
@@ -200,10 +242,10 @@ if __name__ == "__main__":
         WAITLIMIT = 7
         BEGINCOUNT = 10
     else:
-        HITLIMIT = 400
-        WAITLIMIT = 15
+        HITLIMIT = 450
+        WAITLIMIT = 7
 
-        BEGINCOUNT = 10
+        BEGINCOUNT = 5
         global xAr
         xAr = np.arange(0,64)
 
