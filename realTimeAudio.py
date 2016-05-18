@@ -157,11 +157,13 @@ def plotSomething():
 			else : 
 				os.system('curl --header "Content-Type: text/plain" --request PUT --data "OFF" http://localhost:8080/rest/items/RollerShutter_Gest/state')    
 		elif openHabAction[0]==2 :
+			it_up = it_up + 1
 			if (it_up%2 == 0) :
 				os.system('curl --header "Content-Type: text/plain" --request PUT --data "ON" http://localhost:8080/rest/items/Temp_Gest_Up/state')
 			else : 
 				os.system('curl --header "Content-Type: text/plain" --request PUT --data "OFF" http://localhost:8080/rest/items/Temp_Gest_Up/state')			
-		elif openHabAction[0]==4 : 
+		elif openHabAction[0]==4 :
+			it_down = it_down + 1
 			if (it_down%2 == 0) :
 				os.system('curl --header "Content-Type: text/plain" --request PUT --data "ON" http://localhost:8080/rest/items/Temp_Gest_Down/state')
 			else : 
@@ -169,8 +171,8 @@ def plotSomething():
 		else : 				
 			print("Etrange")
 
-        print('OPEN HAB ACTION: ' + str(openHabAction))
-        newOpenHabAction = False
+		print('OPEN HAB ACTION: ' + str(openHabAction))
+		newOpenHabAction = False
 
 
     ####Fin de cette partie
